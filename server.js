@@ -7,11 +7,18 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // Configurazione della connessione sicura a Gmail con i tuoi dati
+// Nuova configurazione super stabile per Gmail
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Forzza l'uso di SSL/TLS fin da subito
     auth: {
         user: 'tiko.luca@gmail.com',
-        pass: 'cgkw jfar lzns yuqg' // La password per l'applicazione di Google
+        pass: 'cgkw jfar lzns yuqg'
+    },
+    connectionTimeout: 10000, // Aspetta fino a 10 secondi prima di mollare
+    tls: {
+        rejectUnauthorized: false // Evita blocchi sui certificati dei server cloud
     }
 });
 
