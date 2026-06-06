@@ -128,16 +128,17 @@
 
             prossimaPagina(3, 4);
 
-            // Invia i dati al backend che spedisce l'email
+            // NUOVO INVIO CON FORMSPREE (Infallibile)
             try {
-                await fetch('/api/invia-risposta', {
+                await fetch('https://formspree.io/f/xzdqdywv', { // <--- INCOLLA QUI IL TUO LINK DI FORMSPREE
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({
-                        data: dataFormattata,
-                        oraOriginale: datiAppuntamento.ora,
-                        oraRitiro: oraRitiroFormattata,
-                        cibo: datiAppuntamento.cibo
+                        Messaggio: "PUNCIA HA DETTO SÌ!",
+                        Giorno: dataFormattata,
+                        Ora_di_Puncia: datiAppuntamento.ora,
+                        Ora_Ritiro_Auto: oraRitiroFormattata,
+                        Cibo_Scelto: datiAppuntamento.cibo
                     })
                 });
             } catch (error) {
