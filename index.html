@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Un invito speciale per Puncia ❤️</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="page1" class="container active">
+        <div class="heart-bg">❤️</div>
+        <h1>Ciao Puncia, vuoi uscire con me? 🥰</h1>
+        <div class="btn-group">
+            <button id="btn-si" onclick="prossimaPagina(1, 2)">SÌ!</button>
+            <button id="btn-no" onclick="rimpicciolisciNo()">No</button>
+        </div>
+    </div>
+
+    <div id="page2" class="container">
+        <h2>Quando sei libera? 🗓️</h2>
+        <p>Scegli il giorno e l'orario perfetto per te:</p>
+        <div class="form-group">
+            <label for="data">Giorno:</label>
+            <input type="date" id="data" required>
+        </div>
+        <div class="form-group">
+            <label for="ora">Orario:</label>
+            <input type="time" id="ora" required>
+        </div>
+        <button class="btn-next" onclick="salvaDataOra()">Continua ➔</button>
+    </div>
+
+    <div id="page3" class="container">
+        <h2>Di cosa hai voglia stasera? 🍕🍔</h2>
+        <p>Scegli il tuo cibo preferito per l'appuntamento:</p>
+        <div class="food-options">
+            <div class="food-card" onclick="selezionaCibo('Pizza', this)">🍕 <span>Pizza</span></div>
+            <div class="food-card" onclick="selezionaCibo('Sushi', this)">🍣 <span>Sushi</span></div>
+            <div class="food-card" onclick="selezionaCibo('Hamburger', this)">🍔 <span>Hamburger</span></div>
+            <div class="food-card" onclick="selezionaCibo('Pasta', this)">🍝 <span>Pasta</span></div>
+            <div class="food-card" onclick="selezionaCibo('Kebab', this)">🌯 <span>Kebab</span></div>
+            <div class="food-card" onclick="selezionaCibo('Qualcosa di strano', this)">👽 <span>Qualcosa di strano</span></div>
+        </div>
+        <button class="btn-next" onclick="inviaRisposte()">Conferma Appuntamento! ❤️</button>
+    </div>
+
+    <div id="page4" class="container text-center">
+        <div class="sparkles">✨🎉✨</div>
+        <h2>Grazie per aver deciso di venire all'appuntamento! 😍</h2>
+        <div class="recap-box">
+            <p>Il nostro piano è pronto!</p>
+            <p id="recap-text">Passo a prenderti un'ora prima del previsto...</p>
+        </div>
+        <p class="footer-love">Non vedo l'ora! ❤️</p>
+    </div>
+
+    <script>
+        let scalaSi = 1;
+        let scalaNo = 1;
+        
+        let datiAppuntamento = {
+            data: '',
+            ora: '',
+            cibo: ''
+        };
+
+        function rimpicciolisciNo() {
+            scalaSi += 0.4;
+            scalaNo -= 0.15;
+            
+            const btnSi = document.getElementById('btn-si');
+            const btnNo = document.getElementById('btn-no');
+            
+            btnSi.style.transform = `scale(${scalaSi})`;
+            btnNo.style.transform = `scale(${scalaNo})`;
+            
+            if (scalaNo <= 0.1) {
+                btnNo.style.display = 'none';
+            }
+        }
+
+        function prossimaPagina(corrente, successiva) {
+            document.getElementById(`page${corrente}`).classList.remove('active');
+            document.getElementById(`page${successiva}`).classList.add('active');
+        }
+
+        function salvaDataOra() {
+            const dataVal = document.getElementById('data').value;
+            const oraVal = document.getElementById('ora').value;
+            
+            if(!dataVal || !oraVal) {
+                alert("Per favore, inserisci un giorno e un orario validi! 😘");
+                return;
+            }
+            
+            datiAppuntamento.data = dataVal;
+            datiAppuntamento.ora = oraVal;
+            prossimaPagina(2, 3);
+        }
+
+        function selezionaCibo(tipo, elemento) {
+            document.querySelectorAll('.food-card').forEach(c => c.classList.remove('selected'));
+            elemento.classList.add('selected');
+            datiAppuntamento.cibo = tipo;
+        }
+
+        async function inviaRisposte() {
+            if(!datiAppuntamento.cibo) {
+                alert("Scegli cosa ti va di mangiare! 🍕");
+                return;
+            }
+
+            // Calcolo l'ora in cui passi a prenderla (1 ora prima)
+            let [ore, minuti] = datiAppuntamento.ora.split(':').map(Number);
+            let oraRitiro = ore - 1;
+            if (oraRitiro < 0) oraRitiro = 23;
+            let oraRitiroFormattata = `${String(oraRitiro).padStart(2, '0')}:${String(minuti).padStart(2, '0')}`;
+
+            // Aggiorna il testo finale dell'app
+            const dateOpzioni = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dataFormattata = new Date(datiAppuntamento.data).toLocaleDateString('it-IT', dateOpzioni);
+            
+            document.getElementById('recap-text').innerHTML = `Giorno deciso: <strong>${dataFormattata}</strong><br>Voglia di: <strong>${datiAppuntamento.cibo}</strong><br><br>🚗 Passo a prenderti alle <strong>${oraRitiroFormattata}</strong> (un'ora prima delle ${datiAppuntamento.ora})!`;
+
+            prossimaPagina(3, 4);
+
+            // Invia i dati al backend che spedisce l'email
+            try {
+                await fetch('/api/invia-risposta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        data: dataFormattata,
+                        oraOriginale: datiAppuntamento.ora,
+                        oraRitiro: oraRitiroFormattata,
+                        cibo: datiAppuntamento.cibo
+                    })
+                });
+            } catch (error) {
+                console.error("Errore nell'invio della mail:", error);
+            }
+        }
+    </script>
+</body>
+</html>
